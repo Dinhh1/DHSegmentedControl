@@ -32,17 +32,11 @@ namespace DHSegmentedControlSample
 
 			var segmentedList = new List<string>();
 
-			segmentedList.Add("Overview");
-			segmentedList.Add("MSRP");
-			segmentedList.Add("Trims");
-			segmentedList.Add("Colors");
-			segmentedList.Add("Features");
-			segmentedList.Add("Options/Packages");
-			segmentedList.Add("Accessories");
-			segmentedList.Add("Specifications");
-			segmentedList.Add("Comparison");
+			for (int i = 1; i < 6; i++)
+			{
+				segmentedList.Add("Option " + i);
 
-			segmentedList.Add("Videos");
+			}
 
 			var SegmentedControl = new DHSegmentedControl(segmentedList);
 
