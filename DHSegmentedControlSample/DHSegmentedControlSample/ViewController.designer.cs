@@ -16,6 +16,9 @@ namespace DHSegmentedControlSample
 		UIKit.UIView DynamicSegmentedContainer { get; set; }
 
 		[Outlet]
+		UIKit.UIView FixedMultilineSegmentedContainer { get; set; }
+
+		[Outlet]
 		UIKit.UIView FixedSegmentedContainer { get; set; }
 		
 		void ReleaseDesignerOutlets ()
@@ -28,6 +31,11 @@ namespace DHSegmentedControlSample
 			if (FixedSegmentedContainer != null) {
 				FixedSegmentedContainer.Dispose ();
 				FixedSegmentedContainer = null;
+			}
+
+			if (FixedMultilineSegmentedContainer != null) {
+				FixedMultilineSegmentedContainer.Dispose ();
+				FixedMultilineSegmentedContainer = null;
 			}
 		}
 	}
