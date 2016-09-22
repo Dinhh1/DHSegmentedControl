@@ -319,15 +319,17 @@ namespace DH.Custom.SegmentedControl
 					}
 					else
 					{
-						var xOffset = 0.0f;
-						var i = 0;
-						foreach (var width in _segmentWidths)
-						{
-							if (idx == i)
-								break;
-							xOffset += width;
-							i++;
-						}
+						//var xOffset = 0.0f;
+						//var i = 0;
+						//foreach (var width in _segmentWidths)
+						//{
+						//	if (idx == i)
+						//		break;
+						//	xOffset += width;
+						//	i++;
+						//}
+
+						var xOffset = GetSelectedSegmentOffset(idx);
 
 						var widthForIndex = _segmentWidths[idx];
 						newRect = new CGRect(xOffset, y, widthForIndex, stringHeight);
@@ -489,7 +491,7 @@ namespace DH.Custom.SegmentedControl
 			{
 				if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 				{
-					var selectedSegmentedOffset = GetSelectedSegmentOffset();
+					var selectedSegmentedOffset = GetSelectedSegmentOffset(SelectedIndex);
 
 					return new CGRect(selectedSegmentedOffset + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, _segmentWidths[SelectedIndex] - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
 				}
@@ -502,7 +504,7 @@ namespace DH.Custom.SegmentedControl
 		{
 			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 			{
-				var selectedSegmentOffset = GetSelectedSegmentOffset();
+				var selectedSegmentOffset = GetSelectedSegmentOffset(SelectedIndex);
 
 				return new CGRect(selectedSegmentOffset, 0, _segmentWidths[SelectedIndex], Frame.Height);
 			}
@@ -649,7 +651,7 @@ namespace DH.Custom.SegmentedControl
 			}
 			else
 			{
-				var offsetter = GetSelectedSegmentOffset();
+				var offsetter = GetSelectedSegmentOffset(SelectedIndex);
 
 				rectForSelectedIndex = new CGRect(offsetter, 0, _segmentWidths[SelectedIndex], Frame.Size.Height);
 				localSegmentWidth = _segmentWidths[SelectedIndex];
@@ -667,13 +669,13 @@ namespace DH.Custom.SegmentedControl
 			_scrollView.ScrollRectToVisible(rectToScrollTo, animated);
 		}
 
-		private float GetSelectedSegmentOffset()
+		private float GetSelectedSegmentOffset(int idx)
 		{
 			var selectedSegmentOffset = 0.0f;
 
 			for (int i = 0; i < _segmentWidths.Count; i++)	
 			{
-				if (SelectedIndex == i)
+				if (idx == i)
 					break;
 				selectedSegmentOffset += _segmentWidths[i];
 			}
