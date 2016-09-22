@@ -17,7 +17,9 @@ namespace DHSegmentedControlSample
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
-			CreateSegmentedControl();
+			CreateDynamicSegmentedControl();
+			CreateFixedSegmentedControl();
+			CreateFixedMultilineSegmentedControl();
 		}
 
 		public override void DidReceiveMemoryWarning()
@@ -26,27 +28,25 @@ namespace DHSegmentedControlSample
 			// Release any cached data, images, etc that aren't in use.
 		}
 
-		private void CreateSegmentedControl()
+		private void CreateDynamicSegmentedControl()
 		{
 			var screenWidth = UIScreen.MainScreen.Bounds.Width;
 
 			var segmentedList = new List<string>();
+			var numberOfOptions = 10;
 
-			for (int i = 1; i < 6; i++)
+			for (int i = 1; i <= numberOfOptions; i++)
 			{
-				segmentedList.Add("Option " + i);
-
+				segmentedList.Add("Dynamic " + i);
 			}
 
-			var SegmentedControl = new DHSegmentedControl(segmentedList);
+			var SegmentedControl = new DHSegmentedControl();
 
 			SegmentedControl.Font = UIFont.FromName("HelveticaNeue-Medium", 14f);
 
-			var size = new CGSize(screenWidth, 40);
+			var size = new CGSize(screenWidth, 50);
 
-			var point = SegmentedControlContainer.Bounds.Location;
-
-			var rect = new CGRect(point, size);
+			var rect = new CGRect(DynamicSegmentedContainer.Bounds.Location, size);
 
 			SegmentedControl.Frame = rect;
 			SegmentedControl.SelectionStyle = DHSegmentedControlSelectionStyle.TextWidthStripe;
@@ -56,15 +56,94 @@ namespace DHSegmentedControlSample
 			SegmentedControl.SelectedTextColor = UIColor.Red;
 			SegmentedControl.BackgroundColor = UIColor.White;
 			SegmentedControl.SegmentEdgeInset = new UIEdgeInsets(0, 10, 0, 10);
-			SegmentedControl.LabelMargins = new UIEdgeInsets(0, 8, 0, 8);
+			SegmentedControl.LabelPaddingInset = new UIEdgeInsets(0, 8, 0, 8);
 			SegmentedControl.SelectionIndicatorHeight = 2.0f;
 			SegmentedControl.UserDraggable = true;
 			SegmentedControl.ShouldAnimateUserSelection = true;
 			SegmentedControl.SelectedIndex = 1;
 			SegmentedControl.SegmentWidthStyle = DHSegmentedControlWidthStyle.Dynamic;
-			SegmentedControlContainer.AddSubview(SegmentedControl);
-			SegmentedControlContainer.BackgroundColor = UIColor.Clear;
+			SegmentedControl.SectionTitles = segmentedList;
+			DynamicSegmentedContainer.AddSubview(SegmentedControl);
+			DynamicSegmentedContainer.BackgroundColor = UIColor.Clear;
 
+		}
+
+		private void CreateFixedSegmentedControl()
+		{
+			var screenWidth = UIScreen.MainScreen.Bounds.Width;
+
+			var segmentedList = new List<string>();
+			var numberOfOptions = 3;
+
+			for (int i = 1; i <= numberOfOptions; i++)
+			{
+				segmentedList.Add("Fix " + i);
+			}
+
+			var SegmentedControl = new DHSegmentedControl(segmentedList);
+
+			SegmentedControl.Font = UIFont.FromName("HelveticaNeue-Medium", 14f);
+
+			var size = new CGSize(screenWidth, 50);
+
+			var rect = new CGRect(FixedSegmentedContainer.Bounds.Location, size);
+
+			SegmentedControl.Frame = rect;
+			SegmentedControl.SelectionStyle = DHSegmentedControlSelectionStyle.TextWidthStripe;
+			SegmentedControl.SelectionIndicatorLocation = DHSegmentedControlLocation.Down;
+			SegmentedControl.SelectionIndicatorColor = UIColor.Purple;
+			SegmentedControl.TextColor = UIColor.DarkGray;
+			SegmentedControl.SelectedTextColor = UIColor.Purple;
+			SegmentedControl.BackgroundColor = UIColor.White;
+			SegmentedControl.SegmentEdgeInset = new UIEdgeInsets(0, 10, 0, 10);
+			SegmentedControl.LabelPaddingInset = new UIEdgeInsets(0, 8, 0, 8);
+			SegmentedControl.SelectionIndicatorHeight = 2.0f;
+			SegmentedControl.UserDraggable = true;
+			SegmentedControl.ShouldAnimateUserSelection = true;
+			SegmentedControl.SelectedIndex = 1;
+			SegmentedControl.SegmentWidthStyle = DHSegmentedControlWidthStyle.Fixed;
+
+			FixedSegmentedContainer.AddSubview(SegmentedControl);
+			FixedSegmentedContainer.BackgroundColor = UIColor.Clear;
+		}
+
+		private void CreateFixedMultilineSegmentedControl()
+		{
+			var screenWidth = UIScreen.MainScreen.Bounds.Width;
+
+			var segmentedList = new List<string>();
+			var numberOfOptions = 5;
+
+			for (int i = 1; i <= numberOfOptions; i++)
+			{
+				segmentedList.Add("This Should appear on multiple lines" + i);
+			}
+
+			var SegmentedControl = new DHSegmentedControl(segmentedList);
+
+			SegmentedControl.Font = UIFont.FromName("HelveticaNeue-Medium", 14f);
+
+			var size = new CGSize(screenWidth, 50);
+
+			var rect = new CGRect(FixedMultilineSegmentedContainer.Bounds.Location, size);
+
+			SegmentedControl.Frame = rect;
+			SegmentedControl.SelectionStyle = DHSegmentedControlSelectionStyle.TextWidthStripe;
+			SegmentedControl.SelectionIndicatorLocation = DHSegmentedControlLocation.Down;
+			SegmentedControl.SelectionIndicatorColor = UIColor.Green;
+			SegmentedControl.TextColor = UIColor.DarkGray;
+			SegmentedControl.SelectedTextColor = UIColor.Green;
+			SegmentedControl.BackgroundColor = UIColor.Black;
+			SegmentedControl.SegmentEdgeInset = new UIEdgeInsets(0, 10, 0, 10);
+			SegmentedControl.LabelPaddingInset = new UIEdgeInsets(4, 8, 4, 8);
+			SegmentedControl.SelectionIndicatorHeight = 3.0f;
+			SegmentedControl.UserDraggable = false;
+			SegmentedControl.ShouldAnimateUserSelection = true;
+			SegmentedControl.SelectedIndex = 1;
+			SegmentedControl.SegmentWidthStyle = DHSegmentedControlWidthStyle.Fixed;
+
+			FixedMultilineSegmentedContainer.AddSubview(SegmentedControl);
+			FixedMultilineSegmentedContainer.BackgroundColor = UIColor.Clear;
 		}
 	}
 }

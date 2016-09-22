@@ -13,13 +13,29 @@ namespace DHSegmentedControlSample
 	partial class ViewController
 	{
 		[Outlet]
-		UIKit.UIView SegmentedControlContainer { get; set; }
+		UIKit.UIView DynamicSegmentedContainer { get; set; }
+
+		[Outlet]
+		UIKit.UIView FixedMultilineSegmentedContainer { get; set; }
+
+		[Outlet]
+		UIKit.UIView FixedSegmentedContainer { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (SegmentedControlContainer != null) {
-				SegmentedControlContainer.Dispose ();
-				SegmentedControlContainer = null;
+			if (DynamicSegmentedContainer != null) {
+				DynamicSegmentedContainer.Dispose ();
+				DynamicSegmentedContainer = null;
+			}
+
+			if (FixedSegmentedContainer != null) {
+				FixedSegmentedContainer.Dispose ();
+				FixedSegmentedContainer = null;
+			}
+
+			if (FixedMultilineSegmentedContainer != null) {
+				FixedMultilineSegmentedContainer.Dispose ();
+				FixedMultilineSegmentedContainer = null;
 			}
 		}
 	}

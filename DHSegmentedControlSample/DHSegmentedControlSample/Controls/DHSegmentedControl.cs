@@ -8,33 +8,6 @@ using CoreGraphics;
 
 namespace DH.Custom.SegmentedControl
 {
-	public class SegmentedScrollView : UIScrollView
-	{
-		public override void TouchesBegan(NSSet touches, UIEvent evt)
-		{
-			if (!Dragging)
-				NextResponder.TouchesBegan(touches, evt);
-			else
-				base.TouchesBegan(touches, evt);
-		}
-
-		public override void TouchesMoved(NSSet touches, UIEvent evt)
-		{
-			if (!Dragging)
-				NextResponder.TouchesMoved(touches, evt);
-			else
-				base.TouchesMoved(touches, evt);
-		}
-
-		public override void TouchesEnded(NSSet touches, UIEvent evt)
-		{
-			if (!Dragging)
-				NextResponder.TouchesEnded(touches, evt);
-			else
-				base.TouchesEnded(touches, evt);
-		}
-	}
-
 	public enum DHSegmentedControlType
 	{
 		Text
@@ -71,23 +44,24 @@ namespace DH.Custom.SegmentedControl
 
 	public class DHSegmentedControl : UIControl
 	{
-		private DHSegmentedControlType type;
-		private SegmentedScrollView scrollView;
+		
+		#region Private Members
 
-		private List<string> sectionTitles;
-		private List<float> segmentWidths;
-		private float segmentWidth;
-		private float borderWidth;
+		private DHSegmentedControlType _controlType;
+		private SegmentedScrollView _scrollView;
+		private List<string> _sectionTitles;
+		private List<float> _segmentWidths;
+		private float _segmentWidth;
+		private float _borderWidth;
+		private int _previousIndex;
+		private List<UILabel> _titleLabels;
+		private UIEdgeInsets _selectionIndicatorEdgeInsets;
+		private DHSegmentedControlWidthStyle _segmentWidthStyle;
+		private DHSegmentedControlBorderType _borderType;
+		private DHSegmentedControlLocation _selectionIndicatorLocation;
+		private float _selectionIndicatorBoxOpacity;
 
-		private int previousIndex;
-
-		private List<UILabel> titleLabels;
-
-		private UIEdgeInsets selectionIndicatorEdgeInsets;
-		private DHSegmentedControlWidthStyle segmentWidthStyle;
-		private DHSegmentedControlBorderType borderType;
-		private DHSegmentedControlLocation selectionIndicatorLocation;
-		private float selectionIndicatorBoxOpacity;
+		#endregion
 
 		public Func<DHSegmentedControl, string, int, bool, NSAttributedString> TitleFormatter { get; set; }
 		public EventHandler<int> IndexChange;
@@ -107,28 +81,39 @@ namespace DH.Custom.SegmentedControl
 		public float VerticalDividerWidth { get; set; }
 		public DHSegmentedControlSelectionStyle SelectionStyle { get; set; }
 		public UIEdgeInsets SegmentEdgeInset { get; set; }
-		public UIEdgeInsets LabelMargins { get; set; }
+		public UIEdgeInsets LabelPaddingInset { get; set; }
 		public CALayer SelectionIndicatorBoxLayer { get; set; }
 		public CALayer SelectionIndicatorArrowLayer { get; set; }
 		public CALayer SelectionIndicatorStripLayer { get; set; }
 		public bool ShouldAnimateUserSelection { get; set; }
 
-		public DHSegmentedControlBorderType BorderType
+		public List<string> SectionTitles
 		{
-			get { return borderType; }
+			get { return _sectionTitles; }
 			set
 			{
-				borderType = value;
+				_sectionTitles = value;
+				UpdateTitleLabels();
+				SetNeedsDisplay();
+			}
+		}
+
+		public DHSegmentedControlBorderType BorderType
+		{
+			get { return _borderType; }
+			set
+			{
+				_borderType = value;
 				SetNeedsDisplay();
 			}
 		}
 
 		public DHSegmentedControlLocation SelectionIndicatorLocation
 		{
-			get { return selectionIndicatorLocation; }
+			get { return _selectionIndicatorLocation; }
 			set
 			{
-				selectionIndicatorLocation = value;
+				_selectionIndicatorLocation = value;
 				if (value == DHSegmentedControlLocation.None)
 					SelectionIndicatorHeight = 0.0f;
 			}
@@ -136,29 +121,86 @@ namespace DH.Custom.SegmentedControl
 
 		public float SelectionIndicatorBoxOpacity
 		{
-			get { return selectionIndicatorBoxOpacity; }
+			get { return _selectionIndicatorBoxOpacity; }
 			set
 			{
-				selectionIndicatorBoxOpacity = value;
+				_selectionIndicatorBoxOpacity = value;
 				SelectionIndicatorBoxLayer.Opacity = value;
 			}
 		}
 
 		public DHSegmentedControlWidthStyle SegmentWidthStyle
 		{
-			get { return segmentWidthStyle; }
+			get { return _segmentWidthStyle; }
 			set
 			{
-				segmentWidthStyle = value;
+				_segmentWidthStyle = value;
 			}
 		}
 
 		public DHSegmentedControl(IEnumerable<string> sectionTitles)
 		{
 			Initialize();
-			this.sectionTitles = new List<string>(sectionTitles);
-			this.titleLabels = new List<UILabel>();
-			foreach (var title in sectionTitles)
+			SectionTitles = new List<string>(sectionTitles);
+		}
+
+		public DHSegmentedControl()
+		{
+			Initialize();
+			SectionTitles = new List<string>();
+		}
+
+
+		private void Initialize()
+		{
+			_previousIndex = -1;
+			_scrollView = new SegmentedScrollView { ScrollsToTop = false, ShowsVerticalScrollIndicator = false, ShowsHorizontalScrollIndicator = false };
+			AddSubview(_scrollView);
+
+			Opaque = false;
+			SelectionIndicatorColor = UIColor.FromRGBA(52.0f / 255.0f, 181.0f / 255.0f, 229.0f / 255.0f, 1.0f);
+
+			SelectedIndex = 0;
+			SegmentEdgeInset = new UIEdgeInsets(0, 0, 0, 0);
+
+			LabelPaddingInset = new UIEdgeInsets(4, 8, 4, 8);
+
+			SelectionIndicatorHeight = 5.0f;
+			_selectionIndicatorEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+			SelectionStyle = DHSegmentedControlSelectionStyle.TextWidthStripe;
+			SelectionIndicatorLocation = DHSegmentedControlLocation.Up;
+			_segmentWidthStyle = DHSegmentedControlWidthStyle.Fixed;
+			UserDraggable = true;
+			TouchEnabled = true;
+			VerticalDividerEnabled = false;
+			VerticalDividerColor = UIColor.Black;
+			BorderColor = UIColor.Black;
+			_borderWidth = 1.0f;
+
+			ShouldAnimateUserSelection = true;
+			_selectionIndicatorBoxOpacity = 0.2f;
+			SelectionIndicatorArrowLayer = new DisposableCALayer();
+			SelectionIndicatorStripLayer = new DisposableCALayer();
+			SelectionIndicatorBoxLayer = new DisposableCALayer { Opacity = _selectionIndicatorBoxOpacity, BorderWidth = 1.0f };
+
+			ContentMode = UIViewContentMode.Redraw;
+
+			_controlType = DHSegmentedControlType.Text;
+
+		}
+
+		private void UpdateTitleLabels()
+		{
+			if (_titleLabels == null)
+			{
+				_titleLabels = new List<UILabel>();
+			}
+			else
+			{
+				_titleLabels.Clear();
+			}
+
+			foreach (var title in _sectionTitles)
 			{
 				var titleLabel = new UILabel(CGRect.Empty)
 				{
@@ -169,48 +211,8 @@ namespace DH.Custom.SegmentedControl
 					AdjustsLetterSpacingToFitWidth = true,
 					MinimumScaleFactor = 0.5f
 				};
-				this.titleLabels.Add(titleLabel);
-
-				//scrollView.AddSubview(titleLabel);
+				_titleLabels.Add(titleLabel);
 			}
-
-			type = DHSegmentedControlType.Text;
-		}
-
-
-		private void Initialize()
-		{
-			previousIndex = -1;
-			scrollView = new SegmentedScrollView { ScrollsToTop = false, ShowsVerticalScrollIndicator = false, ShowsHorizontalScrollIndicator = false };
-			AddSubview(scrollView);
-
-			Opaque = false;
-			SelectionIndicatorColor = UIColor.FromRGBA(52.0f / 255.0f, 181.0f / 255.0f, 229.0f / 255.0f, 1.0f);
-
-			SelectedIndex = 0;
-			SegmentEdgeInset = new UIEdgeInsets(0, 0, 0, 0);
-
-			LabelMargins = new UIEdgeInsets(4, 8, 4, 8);
-
-			SelectionIndicatorHeight = 5.0f;
-			selectionIndicatorEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-			SelectionStyle = DHSegmentedControlSelectionStyle.TextWidthStripe;
-			SelectionIndicatorLocation = DHSegmentedControlLocation.Up;
-			segmentWidthStyle = DHSegmentedControlWidthStyle.Fixed;
-			UserDraggable = true;
-			TouchEnabled = true;
-			VerticalDividerEnabled = false;
-			VerticalDividerColor = UIColor.Black;
-			BorderColor = UIColor.Black;
-			borderWidth = 1.0f;
-
-			ShouldAnimateUserSelection = true;
-			selectionIndicatorBoxOpacity = 0.2f;
-			SelectionIndicatorArrowLayer = new DisposableCALayer();
-			SelectionIndicatorStripLayer = new DisposableCALayer();
-			SelectionIndicatorBoxLayer = new DisposableCALayer { Opacity = selectionIndicatorBoxOpacity, BorderWidth = 1.0f };
-
-			ContentMode = UIViewContentMode.Redraw;
 		}
 
 		public override void LayoutSubviews()
@@ -241,7 +243,7 @@ namespace DH.Custom.SegmentedControl
 
 		private CGSize MeasureTitle(int index)
 		{
-			var title = sectionTitles[index];
+			var title = _sectionTitles[index];
 			var size = CGSize.Empty;
 			var selected = index == SelectedIndex;
 
@@ -261,7 +263,7 @@ namespace DH.Custom.SegmentedControl
 
 		private NSAttributedString AttributedTitle(int index)
 		{
-			var title = sectionTitles[index];
+			var title = _sectionTitles[index];
 			var selected = index == SelectedIndex;
 
 			return TitleFormatter != null
@@ -271,6 +273,9 @@ namespace DH.Custom.SegmentedControl
 
 		public override void Draw(CGRect rect)
 		{
+			if (SectionTitles == null || SectionTitles.Count == 0)
+				return;
+			
 			if (BackgroundColor != null)
 				BackgroundColor.SetFill();
 
@@ -280,13 +285,13 @@ namespace DH.Custom.SegmentedControl
 			SelectionIndicatorBoxLayer.BackgroundColor = SelectionIndicatorColor.CGColor;
 			SelectionIndicatorBoxLayer.BorderColor = SelectionIndicatorColor.CGColor;
 
-			scrollView.Layer.Sublayers = new DisposableCALayer[0];
+			_scrollView.Layer.Sublayers = new DisposableCALayer[0];
 			ClearScrollViewSubLayers();
 			var oldRect = rect;
 
-			if (type == DHSegmentedControlType.Text)
+			if (_controlType == DHSegmentedControlType.Text)
 			{
-				for (int idx = 0; idx < sectionTitles.Count; idx++)
+				for (int idx = 0; idx < _sectionTitles.Count; idx++)
 				{
 					var size = MeasureTitle(idx);
 					var stringWidth = size.Width;
@@ -298,25 +303,25 @@ namespace DH.Custom.SegmentedControl
 
 					var y = (float)Math.Round(((this.Frame.Height - (selectionStyleNotBox ? 1 : 0 * SelectionIndicatorHeight)) / 2) - (stringHeight / 2) + (SelectionIndicatorHeight * (locationUp ? 1 : 0)));
 
-					if (segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && !UserDraggable)
+					if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && !UserDraggable)
 					{
-						stringWidth = segmentWidth - LabelMargins.Right - LabelMargins.Left;
+						stringWidth = _segmentWidth - LabelPaddingInset.Right - LabelPaddingInset.Left;
 
-						newRect = new CGRect((segmentWidth * idx) + (segmentWidth - stringWidth) / 2, 0, stringWidth, oldRect.Height - SelectionIndicatorHeight - LabelMargins.Top - LabelMargins.Bottom);
-						rectDiv = new CGRect((segmentWidth * idx) + (VerticalDividerWidth / 2), SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
-						rectFull = new CGRect(segmentWidth * idx, 0, segmentWidth, oldRect.Height - SelectionIndicatorHeight);
+						newRect = new CGRect((_segmentWidth * idx) + (_segmentWidth - stringWidth) / 2, 0, stringWidth, oldRect.Height - SelectionIndicatorHeight - LabelPaddingInset.Top - LabelPaddingInset.Bottom);
+						rectDiv = new CGRect((_segmentWidth * idx) + (VerticalDividerWidth / 2), SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
+						rectFull = new CGRect(_segmentWidth * idx, 0, _segmentWidth, oldRect.Height - SelectionIndicatorHeight);
 					}
-					else if (segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && UserDraggable)
+					else if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && UserDraggable)
 					{
-						newRect = new CGRect((segmentWidth * idx) + (segmentWidth - stringWidth) / 2, y, stringWidth, stringHeight);
-						rectDiv = new CGRect((segmentWidth * idx) + (VerticalDividerWidth / 2), SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
-						rectFull = new CGRect(segmentWidth * idx, 0, segmentWidth, oldRect.Size.Height);
+						newRect = new CGRect((_segmentWidth * idx) + (_segmentWidth - stringWidth) / 2, y, stringWidth, stringHeight);
+						rectDiv = new CGRect((_segmentWidth * idx) + (VerticalDividerWidth / 2), SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
+						rectFull = new CGRect(_segmentWidth * idx, 0, _segmentWidth, oldRect.Size.Height);
 					}
 					else
 					{
 						var xOffset = 0.0f;
 						var i = 0;
-						foreach (var width in segmentWidths)
+						foreach (var width in _segmentWidths)
 						{
 							if (idx == i)
 								break;
@@ -324,23 +329,23 @@ namespace DH.Custom.SegmentedControl
 							i++;
 						}
 
-						var widthForIndex = segmentWidths[idx];
+						var widthForIndex = _segmentWidths[idx];
 						newRect = new CGRect(xOffset, y, widthForIndex, stringHeight);
-						rectFull = new CGRect(segmentWidth * idx, 0, widthForIndex, oldRect.Size.Height);
+						rectFull = new CGRect(_segmentWidth * idx, 0, widthForIndex, oldRect.Size.Height);
 						rectDiv = new CGRect(xOffset - (VerticalDividerWidth / 2),
 							SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
 					}
 
 					newRect = new CGRect((float)Math.Ceiling(newRect.X), (float)Math.Ceiling(newRect.Y), (float)Math.Ceiling(newRect.Size.Width), (float)Math.Ceiling(newRect.Size.Height));
 
-					var titleLabel = titleLabels[idx];
+					var titleLabel = _titleLabels[idx];
 					titleLabel.AttributedText = AttributedTitle(idx);
 					titleLabel.Frame = newRect;
 					titleLabel.SetNeedsLayout();
-					scrollView.BringSubviewToFront(titleLabel);
+					_scrollView.BringSubviewToFront(titleLabel);
 
 
-					scrollView.AddSubview(titleLabel);
+					_scrollView.AddSubview(titleLabel);
 
 					if (VerticalDividerEnabled)
 					{
@@ -373,13 +378,13 @@ namespace DH.Custom.SegmentedControl
 		private readonly List<CALayer> layers = new List<CALayer>();
 		private void AddScrollViewSubLayer(CALayer layer)
 		{
-			scrollView.Layer.AddSublayer(layer);
+			_scrollView.Layer.AddSublayer(layer);
 			layers.Add(layer);
 		}
 
 		private void InsertScrollViewSubLayer(CALayer layer, int index)
 		{
-			scrollView.Layer.InsertSublayer(layer, index);
+			_scrollView.Layer.InsertSublayer(layer, index);
 			layers.Add(layer);
 		}
 
@@ -401,19 +406,19 @@ namespace DH.Custom.SegmentedControl
 			InsertScrollViewSubLayer(backgroundLayer, 0);
 
 			var borderLayer = new DisposableCALayer { BackgroundColor = BorderColor.CGColor };
-			switch (borderType)
+			switch (_borderType)
 			{
 				case DHSegmentedControlBorderType.Top:
-					borderLayer.Frame = new CGRect(0, 0, fullRect.Size.Width, borderWidth);
+					borderLayer.Frame = new CGRect(0, 0, fullRect.Size.Width, _borderWidth);
 					break;
 				case DHSegmentedControlBorderType.Left:
-					borderLayer.Frame = new CGRect(0, 0, borderWidth, fullRect.Size.Height);
+					borderLayer.Frame = new CGRect(0, 0, _borderWidth, fullRect.Size.Height);
 					break;
 				case DHSegmentedControlBorderType.Bottom:
-					borderLayer.Frame = new CGRect(0, fullRect.Size.Height - borderWidth, fullRect.Size.Width, borderWidth);
+					borderLayer.Frame = new CGRect(0, fullRect.Size.Height - _borderWidth, fullRect.Size.Width, _borderWidth);
 					break;
 				case DHSegmentedControlBorderType.Right:
-					borderLayer.Frame = new CGRect(fullRect.Size.Width - borderWidth, 0, borderWidth, fullRect.Size.Height);
+					borderLayer.Frame = new CGRect(fullRect.Size.Width - _borderWidth, 0, _borderWidth, fullRect.Size.Height);
 					break;
 			}
 			AddScrollViewSubLayer(borderLayer);
@@ -460,13 +465,13 @@ namespace DH.Custom.SegmentedControl
 			var indicatorYOffset = 0.0f;
 
 			if (SelectionIndicatorLocation == DHSegmentedControlLocation.Down)
-				indicatorYOffset = (float)(Bounds.Size.Height - SelectionIndicatorHeight + selectionIndicatorEdgeInsets.Bottom);
+				indicatorYOffset = (float)(Bounds.Size.Height - SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
 			else if (SelectionIndicatorLocation == DHSegmentedControlLocation.Up)
-				indicatorYOffset = (float)selectionIndicatorEdgeInsets.Top;
+				indicatorYOffset = (float)_selectionIndicatorEdgeInsets.Top;
 
 			var sectionWidth = 0.0f;
 
-			switch (type)
+			switch (_controlType)
 			{
 				case DHSegmentedControlType.Text:
 					sectionWidth = (float)MeasureTitle(SelectedIndex).Width;
@@ -474,21 +479,21 @@ namespace DH.Custom.SegmentedControl
 			}
 
 			if (SelectionStyle == DHSegmentedControlSelectionStyle.TextWidthStripe &&
-				sectionWidth <= segmentWidth &&
-				segmentWidthStyle != DHSegmentedControlWidthStyle.Dynamic)
+				sectionWidth <= _segmentWidth &&
+				_segmentWidthStyle != DHSegmentedControlWidthStyle.Dynamic)
 			{
-				var widthToEndOfSelectedSegment = (segmentWidth * SelectedIndex) + segmentWidth;
-				var widthToStartOfSelectedIndex = segmentWidth * SelectedIndex;
+				var widthToEndOfSelectedSegment = (_segmentWidth * SelectedIndex) + _segmentWidth;
+				var widthToStartOfSelectedIndex = _segmentWidth * SelectedIndex;
 				var x = ((widthToEndOfSelectedSegment - widthToStartOfSelectedIndex) / 2) + (widthToStartOfSelectedIndex - sectionWidth / 2);
-				return new CGRect(x + selectionIndicatorEdgeInsets.Left, indicatorYOffset, sectionWidth - selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
+				return new CGRect(x + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, sectionWidth - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
 			}
 			else
 			{
-				if (segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
+				if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 				{
 					var selectedSegmentOffset = 0.0f;
 					var i = 0;
-					foreach (var width in segmentWidths)
+					foreach (var width in _segmentWidths)
 					{
 						if (SelectedIndex == i)
 							break;
@@ -496,21 +501,21 @@ namespace DH.Custom.SegmentedControl
 						i++;
 					}
 
-					return new CGRect(selectedSegmentOffset + selectionIndicatorEdgeInsets.Left, indicatorYOffset, segmentWidths[SelectedIndex] - selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + selectionIndicatorEdgeInsets.Bottom);
+					return new CGRect(selectedSegmentOffset + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, _segmentWidths[SelectedIndex] - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
 				}
 
-				return new CGRect((segmentWidth + selectionIndicatorEdgeInsets.Left) * SelectedIndex, indicatorYOffset, segmentWidth - selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
+				return new CGRect((_segmentWidth + _selectionIndicatorEdgeInsets.Left) * SelectedIndex, indicatorYOffset, _segmentWidth - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
 			}
 		}
 
 		private CGRect FrameForFillerSelectionIndicator()
 		{
-			if (segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
+			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 			{
 				var selectedSegmentOffset = 0.0f;
 				int i = 0;
 
-				foreach (var width in segmentWidths)
+				foreach (var width in _segmentWidths)
 				{
 					if (SelectedIndex == i)
 						break;
@@ -518,63 +523,59 @@ namespace DH.Custom.SegmentedControl
 					i++;
 				}
 
-				return new CGRect(selectedSegmentOffset, 0, segmentWidths[SelectedIndex], Frame.Height);
+				return new CGRect(selectedSegmentOffset, 0, _segmentWidths[SelectedIndex], Frame.Height);
 			}
 
-			return new CGRect(segmentWidth * SelectedIndex, 0, segmentWidth, Frame.Height);
+			return new CGRect(_segmentWidth * SelectedIndex, 0, _segmentWidth, Frame.Height);
 		}
 
 		public int SectionCount
 		{
 			get
 			{
-				switch (type)
-				{
-					case DHSegmentedControlType.Text:
-						return sectionTitles.Count;
-				}
-				return 0;
+				return _sectionTitles.Count;
 			}
 		}
 
 		private void UpdateSegmentRects()
 		{
-			scrollView.ContentInset = UIEdgeInsets.Zero;
-			scrollView.Frame = new CGRect(0, 0, Frame.Width, Frame.Height);
+
+			_scrollView.ContentInset = UIEdgeInsets.Zero;
+			_scrollView.Frame = new CGRect(0, 0, Frame.Width, Frame.Height);
 
 			if (SectionCount > 0)
 			{
-				segmentWidth = (float)(Frame.Size.Width / SectionCount);
+				_segmentWidth = (float)(Frame.Size.Width / SectionCount);
 			}
 
-			if (type == DHSegmentedControlType.Text && segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && UserDraggable)
+			if (_controlType == DHSegmentedControlType.Text && _segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && UserDraggable)
 			{
-				for (int i = 0; i < sectionTitles.Count; i++)
+				for (int i = 0; i < _sectionTitles.Count; i++)
 				{
 					var stringWidth = MeasureTitle(i).Width + SegmentEdgeInset.Left + SegmentEdgeInset.Right;
-					segmentWidth = (float)Math.Max(stringWidth, segmentWidth);
+					_segmentWidth = (float)Math.Max(stringWidth, _segmentWidth);
 				}
 			}
-			else if (type == DHSegmentedControlType.Text && segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
+			else if (_controlType == DHSegmentedControlType.Text && _segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 			{
-				segmentWidths = new List<float>();
-				for (int i = 0; i < sectionTitles.Count; i++)
+				_segmentWidths = new List<float>();
+				for (int i = 0; i < _sectionTitles.Count; i++)
 				{
 					var stringWidth = MeasureTitle(i).Width + SegmentEdgeInset.Left + SegmentEdgeInset.Right;
-					segmentWidths.Add((float)stringWidth);
+					_segmentWidths.Add((float)stringWidth);
 				}
 			}
 
-			scrollView.ScrollEnabled = UserDraggable;
-			scrollView.ContentSize = new CGSize(TotalSegmentControlWidth(), Frame.Size.Height);
+			_scrollView.ScrollEnabled = UserDraggable;
+			_scrollView.ContentSize = new CGSize(TotalSegmentControlWidth(), Frame.Size.Height);
 		}
 
 		private float TotalSegmentControlWidth()
 		{
-			if (type == DHSegmentedControlType.Text && segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
-				return sectionTitles.Count * segmentWidth;
+			if (_controlType == DHSegmentedControlType.Text && _segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
+				return _sectionTitles.Count * _segmentWidth;
 			else //(segmentWidthStyle == AnimatedSegmentedControlWidthStyle.Dynamic)
-				return segmentWidths.Sum();
+				return _segmentWidths.Sum();
 
 		}
 
@@ -584,7 +585,7 @@ namespace DH.Custom.SegmentedControl
 
 		private void SetSelectedSegmentIndex(int index, bool animated = false, bool notify = false)
 		{
-			previousIndex = SelectedIndex;
+			_previousIndex = SelectedIndex;
 			SelectedIndex = index;
 			SetNeedsDisplay();
 
@@ -609,7 +610,9 @@ namespace DH.Custom.SegmentedControl
 					}
 
 					if (notify)
+					{
 						NotifyForSegmentChange(index);
+					}
 
 					SelectionIndicatorArrowLayer.Actions = new NSDictionary();
 					SelectionIndicatorStripLayer.Actions = new NSDictionary();
@@ -656,25 +659,18 @@ namespace DH.Custom.SegmentedControl
 		{
 			CGRect rectForSelectedIndex;
 			var selectedSegmentOffset = 0.0f;
+			var localSegmentWidth = 0.0f;
 
-			if (segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
+			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
 			{
-				rectForSelectedIndex = new CGRect(segmentWidth * SelectedIndex, 0, segmentWidth, Frame.Size.Height);
-
-				if (SelectedIndex > previousIndex)
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) + (segmentWidth / 2));
-				}
-				else
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) - (segmentWidth / 2));
-				}
+				rectForSelectedIndex = new CGRect(_segmentWidth * SelectedIndex, 0, _segmentWidth, Frame.Size.Height);
+				localSegmentWidth = _segmentWidth;
 			}
 			else
 			{
 				var i = 0;
 				var offsetter = 0.0f;
-				foreach (var width in segmentWidths)
+				foreach (var width in _segmentWidths)
 				{
 					if (SelectedIndex == i)
 						break;
@@ -682,24 +678,20 @@ namespace DH.Custom.SegmentedControl
 					i++;
 				}
 
-				rectForSelectedIndex = new CGRect(offsetter, 0, segmentWidths[SelectedIndex], Frame.Size.Height);
-
-				if (SelectedIndex > previousIndex)
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) + (segmentWidths[SelectedIndex] / 2));
-				}
-				else
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) - (segmentWidths[SelectedIndex] / 2));
-				}
+				rectForSelectedIndex = new CGRect(offsetter, 0, _segmentWidths[SelectedIndex], Frame.Size.Height);
+				localSegmentWidth = _segmentWidths[SelectedIndex];
 			}
+
+			var multiplier = (SelectedIndex > _previousIndex) ? 1 : -1;
+
+			selectedSegmentOffset = (float)((Frame.Width / 2) + (multiplier * (localSegmentWidth / 2)));
 
 			var rectToScrollTo = rectForSelectedIndex;
 
 			rectToScrollTo.X -= selectedSegmentOffset;
 
 			rectToScrollTo.Size = new CGSize(selectedSegmentOffset * 2, rectToScrollTo.Size.Height);
-			scrollView.ScrollRectToVisible(rectToScrollTo, animated);
+			_scrollView.ScrollRectToVisible(rectToScrollTo, animated);
 		}
 
 		#endregion
@@ -715,12 +707,12 @@ namespace DH.Custom.SegmentedControl
 				return;
 
 			var segment = 0;
-			if (segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
-				segment = (int)Math.Truncate((touchLocation.X + scrollView.ContentOffset.X) / segmentWidth);
+			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
+				segment = (int)Math.Truncate((touchLocation.X + _scrollView.ContentOffset.X) / _segmentWidth);
 			else
 			{
-				var widthLeft = touchLocation.X + scrollView.ContentOffset.X;
-				foreach (var width in segmentWidths)
+				var widthLeft = touchLocation.X + _scrollView.ContentOffset.X;
+				foreach (var width in _segmentWidths)
 				{
 					widthLeft -= width;
 					if (widthLeft <= 0)
@@ -800,5 +792,38 @@ namespace DH.Custom.SegmentedControl
 			base.Dispose(disposing);
 		}
 	}
+
+	#region ScrollView
+
+	public class SegmentedScrollView : UIScrollView
+	{
+		public override void TouchesBegan(NSSet touches, UIEvent evt)
+		{
+			if (!Dragging)
+				NextResponder.TouchesBegan(touches, evt);
+			else
+				base.TouchesBegan(touches, evt);
+		}
+
+		public override void TouchesMoved(NSSet touches, UIEvent evt)
+		{
+			if (!Dragging)
+				NextResponder.TouchesMoved(touches, evt);
+			else
+				base.TouchesMoved(touches, evt);
+		}
+
+		public override void TouchesEnded(NSSet touches, UIEvent evt)
+		{
+			if (!Dragging)
+				NextResponder.TouchesEnded(touches, evt);
+			else
+				base.TouchesEnded(touches, evt);
+		}
+	}
+
+	#endregion
+
+
 }
 
