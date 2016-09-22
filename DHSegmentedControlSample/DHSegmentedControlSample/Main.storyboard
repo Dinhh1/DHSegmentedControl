@@ -36,21 +36,31 @@
                                     <constraint firstAttribute="height" constant="50" id="7hg-9j-drb"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pLt-ye-rZZ">
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="CAe-ij-3aO"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="ala-a9-bHh" secondAttribute="trailing" id="Pjf-qx-jIy"/>
+                            <constraint firstAttribute="trailing" secondItem="pLt-ye-rZZ" secondAttribute="trailing" id="Tud-Cd-wkC"/>
                             <constraint firstItem="vRC-eS-e34" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Y2P-Yj-4QY"/>
                             <constraint firstItem="ala-a9-bHh" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="ab7-WN-tbM"/>
                             <constraint firstAttribute="trailing" secondItem="IaM-kp-fUB" secondAttribute="trailing" id="cCf-JA-fLd"/>
+                            <constraint firstItem="pLt-ye-rZZ" firstAttribute="top" secondItem="IaM-kp-fUB" secondAttribute="bottom" constant="40" id="cdZ-K2-m4i"/>
                             <constraint firstItem="ala-a9-bHh" firstAttribute="top" secondItem="vRC-eS-e34" secondAttribute="bottom" constant="40" id="eeI-ba-Oeu"/>
                             <constraint firstItem="IaM-kp-fUB" firstAttribute="top" secondItem="ala-a9-bHh" secondAttribute="bottom" constant="40" id="emU-zW-6B4"/>
                             <constraint firstItem="IaM-kp-fUB" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="fmN-ZP-VYs"/>
                             <constraint firstAttribute="trailing" secondItem="vRC-eS-e34" secondAttribute="trailing" id="m9z-pp-nYu"/>
+                            <constraint firstItem="pLt-ye-rZZ" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="mHK-ie-xco"/>
                             <constraint firstItem="vRC-eS-e34" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="rQT-ds-hOH"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="BoxSegmentedContainer" destination="pLt-ye-rZZ" id="UoU-9S-LDe"/>
                         <outlet property="DynamicSegmentedContainer" destination="vRC-eS-e34" id="Eex-L1-rai"/>
                         <outlet property="FixedMultilineSegmentedContainer" destination="IaM-kp-fUB" id="iLv-Ul-lQd"/>
                         <outlet property="FixedSegmentedContainer" destination="ala-a9-bHh" id="bnX-hj-Eep"/>
