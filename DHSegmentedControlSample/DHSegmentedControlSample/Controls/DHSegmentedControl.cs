@@ -319,15 +319,17 @@ namespace DH.Custom.SegmentedControl
 					}
 					else
 					{
-						var xOffset = 0.0f;
-						var i = 0;
-						foreach (var width in _segmentWidths)
-						{
-							if (idx == i)
-								break;
-							xOffset += width;
-							i++;
-						}
+						//var xOffset = 0.0f;
+						//var i = 0;
+						//foreach (var width in _segmentWidths)
+						//{
+						//	if (idx == i)
+						//		break;
+						//	xOffset += width;
+						//	i++;
+						//}
+
+						var xOffset = GetSelectedSegmentOffset(idx);
 
 						var widthForIndex = _segmentWidths[idx];
 						newRect = new CGRect(xOffset, y, widthForIndex, stringHeight);
@@ -341,9 +343,7 @@ namespace DH.Custom.SegmentedControl
 					var titleLabel = _titleLabels[idx];
 					titleLabel.AttributedText = AttributedTitle(idx);
 					titleLabel.Frame = newRect;
-					titleLabel.SetNeedsLayout();
-					_scrollView.BringSubviewToFront(titleLabel);
-
+					titleLabel.LayoutIfNeeded();
 
 					_scrollView.AddSubview(titleLabel);
 
@@ -491,17 +491,9 @@ namespace DH.Custom.SegmentedControl
 			{
 				if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 				{
-					var selectedSegmentOffset = 0.0f;
-					var i = 0;
-					foreach (var width in _segmentWidths)
-					{
-						if (SelectedIndex == i)
-							break;
-						selectedSegmentOffset += width;
-						i++;
-					}
+					var selectedSegmentedOffset = GetSelectedSegmentOffset(SelectedIndex);
 
-					return new CGRect(selectedSegmentOffset + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, _segmentWidths[SelectedIndex] - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
+					return new CGRect(selectedSegmentedOffset + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, _segmentWidths[SelectedIndex] - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
 				}
 
 				return new CGRect((_segmentWidth + _selectionIndicatorEdgeInsets.Left) * SelectedIndex, indicatorYOffset, _segmentWidth - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
@@ -512,16 +504,7 @@ namespace DH.Custom.SegmentedControl
 		{
 			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 			{
-				var selectedSegmentOffset = 0.0f;
-				int i = 0;
-
-				foreach (var width in _segmentWidths)
-				{
-					if (SelectedIndex == i)
-						break;
-					selectedSegmentOffset += width;
-					i++;
-				}
+				var selectedSegmentOffset = GetSelectedSegmentOffset(SelectedIndex);
 
 				return new CGRect(selectedSegmentOffset, 0, _segmentWidths[SelectedIndex], Frame.Height);
 			}
@@ -668,15 +651,7 @@ namespace DH.Custom.SegmentedControl
 			}
 			else
 			{
-				var i = 0;
-				var offsetter = 0.0f;
-				foreach (var width in _segmentWidths)
-				{
-					if (SelectedIndex == i)
-						break;
-					offsetter += width;
-					i++;
-				}
+				var offsetter = GetSelectedSegmentOffset(SelectedIndex);
 
 				rectForSelectedIndex = new CGRect(offsetter, 0, _segmentWidths[SelectedIndex], Frame.Size.Height);
 				localSegmentWidth = _segmentWidths[SelectedIndex];
@@ -692,6 +667,19 @@ namespace DH.Custom.SegmentedControl
 
 			rectToScrollTo.Size = new CGSize(selectedSegmentOffset * 2, rectToScrollTo.Size.Height);
 			_scrollView.ScrollRectToVisible(rectToScrollTo, animated);
+		}
+
+		private float GetSelectedSegmentOffset(int idx)
+		{
+			var selectedSegmentOffset = 0.0f;
+
+			for (int i = 0; i < _segmentWidths.Count; i++)	
+			{
+				if (idx == i)
+					break;
+				selectedSegmentOffset += _segmentWidths[i];
+			}
+			return selectedSegmentOffset;
 		}
 
 		#endregion

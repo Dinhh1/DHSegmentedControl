@@ -13,6 +13,9 @@ namespace DHSegmentedControlSample
 	partial class ViewController
 	{
 		[Outlet]
+		UIKit.UIView BoxSegmentedContainer { get; set; }
+
+		[Outlet]
 		UIKit.UIView DynamicSegmentedContainer { get; set; }
 
 		[Outlet]
@@ -28,14 +31,19 @@ namespace DHSegmentedControlSample
 				DynamicSegmentedContainer = null;
 			}
 
+			if (FixedMultilineSegmentedContainer != null) {
+				FixedMultilineSegmentedContainer.Dispose ();
+				FixedMultilineSegmentedContainer = null;
+			}
+
 			if (FixedSegmentedContainer != null) {
 				FixedSegmentedContainer.Dispose ();
 				FixedSegmentedContainer = null;
 			}
 
-			if (FixedMultilineSegmentedContainer != null) {
-				FixedMultilineSegmentedContainer.Dispose ();
-				FixedMultilineSegmentedContainer = null;
+			if (BoxSegmentedContainer != null) {
+				BoxSegmentedContainer.Dispose ();
+				BoxSegmentedContainer = null;
 			}
 		}
 	}
