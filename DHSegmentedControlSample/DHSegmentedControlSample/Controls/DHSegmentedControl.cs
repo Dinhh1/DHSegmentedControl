@@ -319,16 +319,6 @@ namespace DH.Custom.SegmentedControl
 					}
 					else
 					{
-						//var xOffset = 0.0f;
-						//var i = 0;
-						//foreach (var width in _segmentWidths)
-						//{
-						//	if (idx == i)
-						//		break;
-						//	xOffset += width;
-						//	i++;
-						//}
-
 						var xOffset = GetSelectedSegmentOffset(idx);
 
 						var widthForIndex = _segmentWidths[idx];
