@@ -307,7 +307,7 @@ namespace DH.Custom.SegmentedControl
 					{
 						stringWidth = _segmentWidth - LabelPaddingInset.Right - LabelPaddingInset.Left;
 
-						newRect = new CGRect((_segmentWidth * idx) + (_segmentWidth - stringWidth) / 2, 0, stringWidth, oldRect.Height - SelectionIndicatorHeight - LabelPaddingInset.Top - LabelPaddingInset.Bottom);
+						newRect = new CGRect((_segmentWidth * idx) + (_segmentWidth - stringWidth) / 2, 0, stringWidth, oldRect.Height - LabelPaddingInset.Top - LabelPaddingInset.Bottom);
 						rectDiv = new CGRect((_segmentWidth * idx) + (VerticalDividerWidth / 2), SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
 						rectFull = new CGRect(_segmentWidth * idx, 0, _segmentWidth, oldRect.Height - SelectionIndicatorHeight);
 					}
@@ -742,12 +742,6 @@ namespace DH.Custom.SegmentedControl
 			SelectionIndicatorBoxLayer.Dispose();
 			SelectionIndicatorStripLayer.Dispose();
 			SelectionIndicatorArrowLayer.Dispose();
-
-			foreach (var view in Subviews)
-			{
-				view.RemoveFromSuperview();
-				view.Dispose();
-			}
 
 			base.Dispose(disposing);
 		}
