@@ -81,7 +81,7 @@ namespace DH.Custom.SegmentedControl
 		public float VerticalDividerWidth { get; set; }
 		public DHSegmentedControlSelectionStyle SelectionStyle { get; set; }
 		public UIEdgeInsets SegmentEdgeInset { get; set; }
-		public UIEdgeInsets LabelMargins { get; set; }
+		public UIEdgeInsets LabelPaddingInset { get; set; }
 		public CALayer SelectionIndicatorBoxLayer { get; set; }
 		public CALayer SelectionIndicatorArrowLayer { get; set; }
 		public CALayer SelectionIndicatorStripLayer { get; set; }
@@ -163,7 +163,7 @@ namespace DH.Custom.SegmentedControl
 			SelectedIndex = 0;
 			SegmentEdgeInset = new UIEdgeInsets(0, 0, 0, 0);
 
-			LabelMargins = new UIEdgeInsets(4, 8, 4, 8);
+			LabelPaddingInset = new UIEdgeInsets(4, 8, 4, 8);
 
 			SelectionIndicatorHeight = 5.0f;
 			_selectionIndicatorEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
@@ -305,9 +305,9 @@ namespace DH.Custom.SegmentedControl
 
 					if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed && !UserDraggable)
 					{
-						stringWidth = _segmentWidth - LabelMargins.Right - LabelMargins.Left;
+						stringWidth = _segmentWidth - LabelPaddingInset.Right - LabelPaddingInset.Left;
 
-						newRect = new CGRect((_segmentWidth * idx) + (_segmentWidth - stringWidth) / 2, 0, stringWidth, oldRect.Height - SelectionIndicatorHeight - LabelMargins.Top - LabelMargins.Bottom);
+						newRect = new CGRect((_segmentWidth * idx) + (_segmentWidth - stringWidth) / 2, 0, stringWidth, oldRect.Height - SelectionIndicatorHeight - LabelPaddingInset.Top - LabelPaddingInset.Bottom);
 						rectDiv = new CGRect((_segmentWidth * idx) + (VerticalDividerWidth / 2), SelectionIndicatorHeight * 2, VerticalDividerWidth, Frame.Size.Height - (SelectionIndicatorHeight * 4));
 						rectFull = new CGRect(_segmentWidth * idx, 0, _segmentWidth, oldRect.Height - SelectionIndicatorHeight);
 					}
