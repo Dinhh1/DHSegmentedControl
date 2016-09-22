@@ -19,21 +19,31 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vRC-eS-e34">
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="7Zc-Bp-ZXm"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ala-a9-bHh">
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="i37-jv-wau"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstAttribute="trailing" secondItem="ala-a9-bHh" secondAttribute="trailing" id="Pjf-qx-jIy"/>
                             <constraint firstItem="vRC-eS-e34" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Y2P-Yj-4QY"/>
+                            <constraint firstItem="ala-a9-bHh" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="ab7-WN-tbM"/>
+                            <constraint firstItem="ala-a9-bHh" firstAttribute="top" secondItem="vRC-eS-e34" secondAttribute="bottom" constant="37" id="eeI-ba-Oeu"/>
                             <constraint firstAttribute="trailing" secondItem="vRC-eS-e34" secondAttribute="trailing" id="m9z-pp-nYu"/>
                             <constraint firstItem="vRC-eS-e34" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="rQT-ds-hOH"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="SegmentedControlContainer" destination="vRC-eS-e34" id="g71-dt-h6O"/>
+                        <outlet property="DynamicSegmentedContainer" destination="vRC-eS-e34" id="Eex-L1-rai"/>
+                        <outlet property="FixedSegmentedContainer" destination="ala-a9-bHh" id="bnX-hj-Eep"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
