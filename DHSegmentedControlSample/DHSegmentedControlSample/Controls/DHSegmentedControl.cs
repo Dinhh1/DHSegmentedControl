@@ -335,7 +335,8 @@ namespace DH.Custom.SegmentedControl
 					titleLabel.Frame = newRect;
 					titleLabel.LayoutIfNeeded();
 
-					_scrollView.AddSubview(titleLabel);
+					//_scrollView.AddSubview(titleLabel);
+					AddScrollViewSubLayer(titleLabel.Layer);
 
 					if (VerticalDividerEnabled)
 					{
