@@ -31,11 +31,11 @@ namespace DHSegmentedControlSample
 			var screenWidth = UIScreen.MainScreen.Bounds.Width;
 
 			var segmentedList = new List<string>();
+			var numberOfOptions = 10;
 
-			for (int i = 1; i < 6; i++)
+			for (int i = 1; i <= numberOfOptions; i++)
 			{
 				segmentedList.Add("Option " + i);
-
 			}
 
 			var SegmentedControl = new DHSegmentedControl(segmentedList);

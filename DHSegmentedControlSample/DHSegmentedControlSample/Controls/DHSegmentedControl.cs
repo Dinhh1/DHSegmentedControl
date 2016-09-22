@@ -528,12 +528,7 @@ namespace DH.Custom.SegmentedControl
 		{
 			get
 			{
-				switch (type)
-				{
-					case DHSegmentedControlType.Text:
-						return sectionTitles.Count;
-				}
-				return 0;
+				return sectionTitles.Count;
 			}
 		}
 
@@ -609,7 +604,9 @@ namespace DH.Custom.SegmentedControl
 					}
 
 					if (notify)
+					{
 						NotifyForSegmentChange(index);
+					}
 
 					SelectionIndicatorArrowLayer.Actions = new NSDictionary();
 					SelectionIndicatorStripLayer.Actions = new NSDictionary();
@@ -656,19 +653,12 @@ namespace DH.Custom.SegmentedControl
 		{
 			CGRect rectForSelectedIndex;
 			var selectedSegmentOffset = 0.0f;
+			var localSegmentWidth = 0.0f;
 
 			if (segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
 			{
 				rectForSelectedIndex = new CGRect(segmentWidth * SelectedIndex, 0, segmentWidth, Frame.Size.Height);
-
-				if (SelectedIndex > previousIndex)
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) + (segmentWidth / 2));
-				}
-				else
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) - (segmentWidth / 2));
-				}
+				localSegmentWidth = segmentWidth;
 			}
 			else
 			{
@@ -683,16 +673,12 @@ namespace DH.Custom.SegmentedControl
 				}
 
 				rectForSelectedIndex = new CGRect(offsetter, 0, segmentWidths[SelectedIndex], Frame.Size.Height);
-
-				if (SelectedIndex > previousIndex)
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) + (segmentWidths[SelectedIndex] / 2));
-				}
-				else
-				{
-					selectedSegmentOffset = (float)((Frame.Width / 2) - (segmentWidths[SelectedIndex] / 2));
-				}
+				localSegmentWidth = segmentWidths[SelectedIndex];
 			}
+
+			var multiplier = (SelectedIndex > previousIndex) ? 1 : -1;
+
+			selectedSegmentOffset = (float)((Frame.Width / 2) + (multiplier * (localSegmentWidth / 2)));
 
 			var rectToScrollTo = rectForSelectedIndex;
 
