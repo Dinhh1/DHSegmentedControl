@@ -44,7 +44,7 @@ namespace DH.Custom.SegmentedControl
 
 	public class DHSegmentedControl : UIControl
 	{
-		
+
 		#region Private Members
 
 		private DHSegmentedControlType _controlType;
@@ -106,10 +106,10 @@ namespace DH.Custom.SegmentedControl
 			get { return _selectedIndex; }
 			set
 			{
-				if (_sectionTitles == null || value >= (_sectionTitles.Count - 1))
-				{
+				if (_sectionTitles == null || value >= _sectionTitles.Count)
 					return;
-				}
+
+				UpdateSegmentRects();
 				SetSelectedSegmentIndex(value, true, false);
 			}
 		}
@@ -291,7 +291,7 @@ namespace DH.Custom.SegmentedControl
 		{
 			if (SectionTitles == null || SectionTitles.Count == 0)
 				return;
-			
+
 			if (BackgroundColor != null)
 				BackgroundColor.SetFill();
 
@@ -677,7 +677,7 @@ namespace DH.Custom.SegmentedControl
 		{
 			var selectedSegmentOffset = 0.0f;
 
-			for (int i = 0; i < _segmentWidths.Count; i++)	
+			for (int i = 0; i < _segmentWidths.Count; i++)
 			{
 				if (idx == i)
 					break;
