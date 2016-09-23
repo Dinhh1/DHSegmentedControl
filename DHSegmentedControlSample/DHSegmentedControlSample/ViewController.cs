@@ -41,7 +41,7 @@ namespace DHSegmentedControlSample
 				segmentedList.Add("Box " + i);
 			}
 
-			var SegmentedControl = new DHSegmentedControl();
+			var SegmentedControl = new DHSegmentedControl(segmentedList);
 
 			SegmentedControl.Font = UIFont.FromName("HelveticaNeue-Medium", 14f);
 
@@ -61,9 +61,8 @@ namespace DHSegmentedControlSample
 			SegmentedControl.SelectionIndicatorHeight = 2.0f;
 			SegmentedControl.UserDraggable = true;
 			SegmentedControl.ShouldAnimateUserSelection = true;
-			SegmentedControl.SelectedIndex = 1;
+			SegmentedControl.SelectedIndex = 6;
 			SegmentedControl.SegmentWidthStyle = DHSegmentedControlWidthStyle.Dynamic;
-			SegmentedControl.SectionTitles = segmentedList;
 			BoxSegmentedContainer.AddSubview(SegmentedControl);
 			BoxSegmentedContainer.BackgroundColor = UIColor.Clear;
 		}
@@ -80,7 +79,7 @@ namespace DHSegmentedControlSample
 				segmentedList.Add("Dynamic " + i);
 			}
 
-			var SegmentedControl = new DHSegmentedControl();
+			var SegmentedControl = new DHSegmentedControl(segmentedList);
 
 			SegmentedControl.Font = UIFont.FromName("HelveticaNeue-Medium", 14f);
 
@@ -102,7 +101,6 @@ namespace DHSegmentedControlSample
 			SegmentedControl.ShouldAnimateUserSelection = true;
 			SegmentedControl.SelectedIndex = 1;
 			SegmentedControl.SegmentWidthStyle = DHSegmentedControlWidthStyle.Dynamic;
-			SegmentedControl.SectionTitles = segmentedList;
 			DynamicSegmentedContainer.AddSubview(SegmentedControl);
 			DynamicSegmentedContainer.BackgroundColor = UIColor.Clear;
 
