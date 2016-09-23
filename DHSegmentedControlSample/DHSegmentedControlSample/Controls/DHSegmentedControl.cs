@@ -51,6 +51,7 @@ namespace DH.Custom.SegmentedControl
 		private SegmentedScrollView _scrollView;
 		private List<string> _sectionTitles;
 		private List<float> _segmentWidths;
+		private readonly List<CALayer> layers = new List<CALayer>();
 		private float _segmentWidth;
 		private float _borderWidth;
 		private int _previousIndex;
@@ -60,6 +61,8 @@ namespace DH.Custom.SegmentedControl
 		private DHSegmentedControlBorderType _borderType;
 		private DHSegmentedControlLocation _selectionIndicatorLocation;
 		private float _selectionIndicatorBoxOpacity;
+		private int _selectedIndex;
+
 
 		#endregion
 
@@ -69,7 +72,6 @@ namespace DH.Custom.SegmentedControl
 		public UIColor BorderColor { get; set; }
 		public bool TouchEnabled { get; set; }
 		public bool UserDraggable { get; set; }
-		public int SelectedIndex { get; set; }
 		public UIFont Font { get; set; }
 		public UIFont SelectedFont { get; set; }
 		public UIColor TextColor { get; set; }
@@ -93,8 +95,22 @@ namespace DH.Custom.SegmentedControl
 			set
 			{
 				_sectionTitles = value;
+				_selectedIndex = 0;
 				UpdateTitleLabels();
 				SetNeedsDisplay();
+			}
+		}
+
+		public int SelectedIndex
+		{
+			get { return _selectedIndex; }
+			set
+			{
+				if (_sectionTitles == null || value >= (_sectionTitles.Count - 1))
+				{
+					return;
+				}
+				SetSelectedSegmentIndex(value, true, false);
 			}
 		}
 
@@ -160,7 +176,7 @@ namespace DH.Custom.SegmentedControl
 			Opaque = false;
 			SelectionIndicatorColor = UIColor.FromRGBA(52.0f / 255.0f, 181.0f / 255.0f, 229.0f / 255.0f, 1.0f);
 
-			SelectedIndex = 0;
+			_selectedIndex = 0;
 			SegmentEdgeInset = new UIEdgeInsets(0, 0, 0, 0);
 
 			LabelPaddingInset = new UIEdgeInsets(4, 8, 4, 8);
@@ -245,7 +261,7 @@ namespace DH.Custom.SegmentedControl
 		{
 			var title = _sectionTitles[index];
 			var size = CGSize.Empty;
-			var selected = index == SelectedIndex;
+			var selected = index == _selectedIndex;
 
 			if (TitleFormatter == null)
 			{
@@ -264,7 +280,7 @@ namespace DH.Custom.SegmentedControl
 		private NSAttributedString AttributedTitle(int index)
 		{
 			var title = _sectionTitles[index];
-			var selected = index == SelectedIndex;
+			var selected = index == _selectedIndex;
 
 			return TitleFormatter != null
 					? TitleFormatter(this, title, index, selected)
@@ -333,9 +349,7 @@ namespace DH.Custom.SegmentedControl
 					var titleLabel = _titleLabels[idx];
 					titleLabel.AttributedText = AttributedTitle(idx);
 					titleLabel.Frame = newRect;
-					titleLabel.LayoutIfNeeded();
 
-					//_scrollView.AddSubview(titleLabel);
 					AddScrollViewSubLayer(titleLabel.Layer);
 
 					if (VerticalDividerEnabled)
@@ -349,7 +363,7 @@ namespace DH.Custom.SegmentedControl
 			}
 
 
-			if (SelectedIndex != -1)
+			if (_selectedIndex != -1)
 			{
 
 				if (SelectionIndicatorStripLayer.SuperLayer == null)
@@ -366,7 +380,6 @@ namespace DH.Custom.SegmentedControl
 			}
 		}
 
-		private readonly List<CALayer> layers = new List<CALayer>();
 		private void AddScrollViewSubLayer(CALayer layer)
 		{
 			_scrollView.Layer.AddSublayer(layer);
@@ -465,7 +478,7 @@ namespace DH.Custom.SegmentedControl
 			switch (_controlType)
 			{
 				case DHSegmentedControlType.Text:
-					sectionWidth = (float)MeasureTitle(SelectedIndex).Width;
+					sectionWidth = (float)MeasureTitle(_selectedIndex).Width;
 					break;
 			}
 
@@ -473,8 +486,8 @@ namespace DH.Custom.SegmentedControl
 				sectionWidth <= _segmentWidth &&
 				_segmentWidthStyle != DHSegmentedControlWidthStyle.Dynamic)
 			{
-				var widthToEndOfSelectedSegment = (_segmentWidth * SelectedIndex) + _segmentWidth;
-				var widthToStartOfSelectedIndex = _segmentWidth * SelectedIndex;
+				var widthToEndOfSelectedSegment = (_segmentWidth * _selectedIndex) + _segmentWidth;
+				var widthToStartOfSelectedIndex = _segmentWidth * _selectedIndex;
 				var x = ((widthToEndOfSelectedSegment - widthToStartOfSelectedIndex) / 2) + (widthToStartOfSelectedIndex - sectionWidth / 2);
 				return new CGRect(x + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, sectionWidth - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
 			}
@@ -482,12 +495,12 @@ namespace DH.Custom.SegmentedControl
 			{
 				if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 				{
-					var selectedSegmentedOffset = GetSelectedSegmentOffset(SelectedIndex);
+					var selectedSegmentedOffset = GetSelectedSegmentOffset(_selectedIndex);
 
-					return new CGRect(selectedSegmentedOffset + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, _segmentWidths[SelectedIndex] - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
+					return new CGRect(selectedSegmentedOffset + _selectionIndicatorEdgeInsets.Left, indicatorYOffset, _segmentWidths[_selectedIndex] - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight + _selectionIndicatorEdgeInsets.Bottom);
 				}
 
-				return new CGRect((_segmentWidth + _selectionIndicatorEdgeInsets.Left) * SelectedIndex, indicatorYOffset, _segmentWidth - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
+				return new CGRect((_segmentWidth + _selectionIndicatorEdgeInsets.Left) * _selectedIndex, indicatorYOffset, _segmentWidth - _selectionIndicatorEdgeInsets.Right, SelectionIndicatorHeight);
 			}
 		}
 
@@ -495,12 +508,12 @@ namespace DH.Custom.SegmentedControl
 		{
 			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Dynamic)
 			{
-				var selectedSegmentOffset = GetSelectedSegmentOffset(SelectedIndex);
+				var selectedSegmentOffset = GetSelectedSegmentOffset(_selectedIndex);
 
-				return new CGRect(selectedSegmentOffset, 0, _segmentWidths[SelectedIndex], Frame.Height);
+				return new CGRect(selectedSegmentOffset, 0, _segmentWidths[_selectedIndex], Frame.Height);
 			}
 
-			return new CGRect(_segmentWidth * SelectedIndex, 0, _segmentWidth, Frame.Height);
+			return new CGRect(_segmentWidth * _selectedIndex, 0, _segmentWidth, Frame.Height);
 		}
 
 		public int SectionCount
@@ -559,8 +572,8 @@ namespace DH.Custom.SegmentedControl
 
 		private void SetSelectedSegmentIndex(int index, bool animated = false, bool notify = false)
 		{
-			_previousIndex = SelectedIndex;
-			SelectedIndex = index;
+			_previousIndex = _selectedIndex;
+			_selectedIndex = index;
 			SetNeedsDisplay();
 
 			if (index == -1)
@@ -637,18 +650,18 @@ namespace DH.Custom.SegmentedControl
 
 			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
 			{
-				rectForSelectedIndex = new CGRect(_segmentWidth * SelectedIndex, 0, _segmentWidth, Frame.Size.Height);
+				rectForSelectedIndex = new CGRect(_segmentWidth * _selectedIndex, 0, _segmentWidth, Frame.Size.Height);
 				localSegmentWidth = _segmentWidth;
 			}
 			else
 			{
-				var offsetter = GetSelectedSegmentOffset(SelectedIndex);
+				var offsetter = GetSelectedSegmentOffset(_selectedIndex);
 
-				rectForSelectedIndex = new CGRect(offsetter, 0, _segmentWidths[SelectedIndex], Frame.Size.Height);
-				localSegmentWidth = _segmentWidths[SelectedIndex];
+				rectForSelectedIndex = new CGRect(offsetter, 0, _segmentWidths[_selectedIndex], Frame.Size.Height);
+				localSegmentWidth = _segmentWidths[_selectedIndex];
 			}
 
-			var multiplier = (SelectedIndex > _previousIndex) ? 1 : -1;
+			var multiplier = (_selectedIndex > _previousIndex) ? 1 : -1;
 
 			selectedSegmentOffset = (float)((Frame.Width / 2) + (multiplier * (localSegmentWidth / 2)));
 
@@ -700,7 +713,7 @@ namespace DH.Custom.SegmentedControl
 				}
 			}
 
-			if (segment != SelectedIndex && segment < SectionCount)
+			if (segment != _selectedIndex && segment < SectionCount)
 			{
 				if (TouchEnabled)
 					SetSelectedSegmentIndex(segment, ShouldAnimateUserSelection, true);
