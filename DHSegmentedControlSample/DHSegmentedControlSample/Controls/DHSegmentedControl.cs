@@ -646,30 +646,32 @@ namespace DH.Custom.SegmentedControl
 		{
 			CGRect rectForSelectedIndex;
 			var selectedSegmentOffset = 0.0f;
-			var localSegmentWidth = 0.0f;
-
 			if (_segmentWidthStyle == DHSegmentedControlWidthStyle.Fixed)
 			{
-				rectForSelectedIndex = new CGRect(_segmentWidth * _selectedIndex, 0, _segmentWidth, Frame.Size.Height);
-				localSegmentWidth = _segmentWidth;
+				rectForSelectedIndex = new CGRect(_segmentWidth * _selectedIndex,
+								  0,
+								  _segmentWidth,
+								  Frame.Size.Height);
+
+				selectedSegmentOffset = (float)(Frame.Width / 2) - (_segmentWidth / 2);
 			}
 			else
 			{
 				var offsetter = GetSelectedSegmentOffset(_selectedIndex);
 
-				rectForSelectedIndex = new CGRect(offsetter, 0, _segmentWidths[_selectedIndex], Frame.Size.Height);
-				localSegmentWidth = _segmentWidths[_selectedIndex];
+
+				rectForSelectedIndex = new CGRect(offsetter,
+												  0,
+												  _segmentWidths[_selectedIndex],
+												  Frame.Size.Height);
+
+				selectedSegmentOffset = (float)(Frame.Width / 2) - (_segmentWidths[_selectedIndex] / 2);
 			}
 
-			var multiplier = (_selectedIndex > _previousIndex) ? 1 : -1;
-
-			selectedSegmentOffset = (float)((Frame.Width / 2) + (multiplier * (localSegmentWidth / 2)));
-
-			var rectToScrollTo = rectForSelectedIndex;
-
+			CGRect rectToScrollTo = rectForSelectedIndex;
 			rectToScrollTo.X -= selectedSegmentOffset;
+			rectToScrollTo.Width += selectedSegmentOffset * 2;
 
-			rectToScrollTo.Size = new CGSize(selectedSegmentOffset * 2, rectToScrollTo.Size.Height);
 			_scrollView.ScrollRectToVisible(rectToScrollTo, animated);
 		}
 
